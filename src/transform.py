@@ -1,8 +1,3 @@
-"""Módulo de transformación.
-
-Contiene la función `transform` que normaliza tipos, limpia texto y calcula
-campos derivados mínimos.
-"""
 from typing import Any
 import pandas as pd
 import logging
@@ -11,18 +6,6 @@ logger = logging.getLogger(__name__)
 
 
 def transform(df: pd.DataFrame) -> pd.DataFrame:
-	"""Transforma y limpia el DataFrame de ventas.
-
-	Reglas aplicadas (decisiones por defecto):
-	- Strip de descripciones.
-	- Parseo de `InvoiceDate` con dayfirst=True (formato en los datos de ejemplo).
-	- Conversión de `Quantity`, `UnitPrice` y `CustomerID` a numéricos; filas
-	  sin CustomerID válidos se descartan.
-	- Marca `is_return` si `InvoiceNo` comienza con 'C'.
-	- Calcula `TotalPrice = Quantity * UnitPrice`.
-
-	Devuelve copia (no modifica el DataFrame original).
-	"""
 	df = df.copy()
 	logger.debug("Starting transform on dataframe with %d rows", len(df))
 
@@ -59,7 +42,7 @@ def transform(df: pd.DataFrame) -> pd.DataFrame:
 	# Campo derivado
 	df["TotalPrice"] = df["Quantity"] * df["UnitPrice"]
 
-	# Reordenar columnas de forma razonable
+	# Reordenar columnas
 	cols = ["InvoiceNo", "InvoiceDate", "StockCode", "Description", "Quantity", "UnitPrice", "TotalPrice", "CustomerID", "Country", "is_return"]
 	cols_existing = [c for c in cols if c in df.columns]
 	logger.debug("Transform result columns: %s", cols_existing)

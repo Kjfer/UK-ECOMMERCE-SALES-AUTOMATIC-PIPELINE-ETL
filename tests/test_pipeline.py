@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.extract import extract_csv
 from src.transform import transform
-from src.load import load_to_sqlite
+from src.load import load_to_csv
 
 
 def test_pipeline_end_to_end(tmp_path):
@@ -17,11 +17,9 @@ def test_pipeline_end_to_end(tmp_path):
     t = transform(df)
     assert "TotalPrice" in t.columns
 
-    db = tmp_path / "pipeline_test.db"
-    load_to_sqlite(t, db)
-    conn = sqlite3.connect(str(db))
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM sales")
-    cnt = cur.fetchone()[0]
-    conn.close()
-    assert cnt == len(t)
+    out_csv = tmp_path / "pipeline_test.csv"
+    load_to_csv(t, out_csv)
+    # comprobar que el CSV existe y tiene las mismas filas
+    import pandas as pd
+    df_out = pd.read_csv(out_csv)
+    assert len(df_out) == len(t)

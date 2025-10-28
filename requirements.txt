@@ -5,3 +5,4 @@ python-dotenv==1.0.0
 pytest==7.3.2
 matplotlib==3.7.1
 seaborn==0.12.2
+ipykernel==7.1.0

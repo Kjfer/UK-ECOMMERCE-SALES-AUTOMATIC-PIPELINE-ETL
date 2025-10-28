@@ -11,9 +11,6 @@ env/
 # pytest cache
 .pytest_cache/
 
-# Data processed (no versioning)
-data/processed/
-
 # SQLite DBs
 *.db
 

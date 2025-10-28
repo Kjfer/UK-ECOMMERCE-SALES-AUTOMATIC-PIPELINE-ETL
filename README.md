@@ -11,6 +11,36 @@ Contenido principal
 - `notebooks/` — análisis exploratorio (Jupyter notebook).
 - `tests/` — tests de integración/funcionales (pytest).
 
+Descripción del CSV de origen
+
+El fichero de entrada principal esperado está en `data/raw/data.csv`. Es un CSV con las transacciones de ventas en bruto. Breve resumen de su estructura y convenciones:
+
+- Ubicación por defecto: `data/raw/data.csv` (el pipeline procesa todos los CSVs que encuentre en `data/raw`).
+- Codificación: típicamente UTF-8; el extractor intenta caer a `latin-1` o `cp1252` si hay problemas con caracteres especiales (símbolos de moneda, acentos).
+- Cabeceras/columnas esperadas (mínimo para el pipeline):
+	- `InvoiceNo` (string): número/factura; las devoluciones suelen marcarse con una `C` al inicio.
+	- `StockCode` (string): código del artículo.
+	- `Description` (string): descripción del producto.
+	- `Quantity` (numérico): unidades vendidas (puede venir como string en el CSV original).
+	- `InvoiceDate` (fecha/hora): fecha de la transacción (el pipeline usa `dayfirst=True` al parsear).
+	- `UnitPrice` (numérico): precio unitario.
+	- `CustomerID` (numérico/ID): identificador del cliente; filas sin `CustomerID` se descartan por defecto en la transformación.
+	- `Country` (string): país del cliente/transacción.
+
+- Formatos y notas:
+	- Las columnas numéricas pueden venir como texto; durante la transformación se convierten con `pd.to_numeric(..., errors='coerce')`.
+	- Fechas: el parser usado asume formato día primero (UK), p. ej. `31/12/2010 09:45`.
+	- Filas sin `CustomerID` se eliminan en `transform.py` (decisión de negocio configurable).
+	- `InvoiceNo` que comienzan por `C` se consideran devoluciones y se marcan en la columna `is_return`.
+
+Ejemplo de cabecera (fila 1 del CSV):
+
+```
+InvoiceNo,StockCode,Description,Quantity,InvoiceDate,UnitPrice,CustomerID,Country
+```
+
+Si tus datos difieren en nombres de columna o formato, ajusta `src/transform.py` para mapear/normalizar las columnas antes de ejecutar el pipeline.
+
 Requisitos
 - Python 3.8+ (recomendado 3.11)
 - `requirements.txt` lista dependencias usadas por el proyecto. Las principales librerías son:
@@ -95,19 +125,5 @@ Este repositorio incluye un workflow: `.github/workflows/daily_etl.yml` que est�
 	- que GitHub Actions esté habilitado en el repositorio;
 	- revisar la pestaña Actions → Daily ETL para ver ejecuciones y logs.
 
-Buenas prácticas y recomendaciones
 
-- Control de versiones de dependencias: mantener `requirements.txt` actualizado y usar pins para reproducibilidad.
-- Validación y monitorización: añadir checks al transform para detectar outliers y añadir alarmas/notifications en el workflow si falla.
-- Idempotencia: el pipeline actual sobrescribe las salidas por fecha. Si necesitas carga incremental, implementa deduplicación por clave natural.
-- Seguridad: si el workflow hace push al repo, revisa los permisos del `GITHUB_TOKEN` y las políticas de tu organización.
 
-Contacto y contribuciones
-
-Si quieres mejorar el pipeline (nuevas transformaciones, tests o integración con un almacén de datos), abre un issue o envía un pull request. Incluye una descripción clara del cambio y un pequeño test cuando sea posible.
-
----
-
-Archivo: `requirements.txt` contiene las dependencias necesarias. Instala todo en un entorno virtual antes de ejecutar el pipeline o los notebooks.
-
-Gracias por usar este proyecto — si quieres, puedo generar automáticamente un badge de estado para el README o crear una PR con más mejoras (tests unitarios adicionales, validaciones, etc.).

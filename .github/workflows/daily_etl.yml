@@ -50,16 +50,17 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Debug: show repo files and data/raw
+      - name: Debug show repo files and data/raw
         run: |
-          echo "--- Repo root ---"
-          ls -la
-          echo "--- data/ ---"
-          ls -la data || true
-          echo "--- data/raw ---"
-          ls -la data/raw || true
-          echo "--- show any CSVs found ---"
-          find data -type f -name '*.csv' -print || true
+          echo '--- Repo root ---'
+          pwd
+          ls -la .
+          echo '--- data/ ---'
+          if [ -d data ]; then ls -la data; else echo 'no data dir'; fi
+          echo '--- data/raw ---'
+          if [ -d data/raw ]; then ls -la data/raw; else echo 'no data/raw'; fi
+          echo '--- show any CSVs found ---'
+          find data -type f -name "*.csv" -print || true
 
       - name: Run ETL pipeline
         run: |
